@@ -1,0 +1,186 @@
+### Create a task
+POST {{ base_url }}/api/tasks/
+Content-Type: application/json
+Authorization: Bearer {{ access_token }}
+
+{
+  "title": "Buy groceries",
+  "description": "Milk, eggs, bread"
+}
+
+> {%
+    client.test("Task created", function () {
+        client.assert(response.status === 201);
+        client.assert(response.body.title === "Buy groceries");
+        client.assert(response.body.description === "Milk, eggs, bread");
+        client.assert(response.body.status === false);
+        client.assert(response.body.hasOwnProperty("id"));
+        client.assert(response.body.hasOwnProperty("created_at"));
+    });
+    client.global.set("task_id", response.body.id);
+%}
+
+### Create a task with status true
+POST {{ base_url }}/api/tasks/
+Content-Type: application/json
+Authorization: Bearer {{ access_token }}
+
+{
+  "title": "Already done task",
+  "status": true
+}
+
+> {%
+    client.test("Task created with status true", function () {
+        client.assert(response.status === 201);
+        client.assert(response.body.status === true);
+        client.assert(response.body.description === "");
+    });
+%}
+
+### Create a task without title (should fail)
+POST {{ base_url }}/api/tasks/
+Content-Type: application/json
+Authorization: Bearer {{ access_token }}
+
+{
+  "description": "No title provided"
+}
+
+> {%
+    client.test("Missing title rejected", function () {
+        client.assert(response.status === 400);
+        client.assert(response.body.hasOwnProperty("title"));
+    });
+%}
+
+### Create a task without authentication (should fail)
+POST {{ base_url }}/api/tasks/
+Content-Type: application/json
+
+{
+  "title": "Unauthenticated task"
+}
+
+> {%
+    client.test("Unauthenticated request rejected", function () {
+        client.assert(response.status === 401);
+    });
+%}
+
+### List all tasks
+GET {{ base_url }}/api/tasks/
+Authorization: Bearer {{ access_token }}
+
+> {%
+    client.test("Tasks listed", function () {
+        client.assert(response.status === 200);
+        client.assert(Array.isArray(response.body));
+        client.assert(response.body.length > 0);
+    });
+%}
+
+### List tasks filtered by status (completed)
+GET {{ base_url }}/api/tasks/?status=true
+Authorization: Bearer {{ access_token }}
+
+> {%
+    client.test("Filtered completed tasks", function () {
+        client.assert(response.status === 200);
+        response.body.forEach(function (task) {
+            client.assert(task.status === true);
+        });
+    });
+%}
+
+### List tasks filtered by status (pending)
+GET {{ base_url }}/api/tasks/?status=false
+Authorization: Bearer {{ access_token }}
+
+> {%
+    client.test("Filtered pending tasks", function () {
+        client.assert(response.status === 200);
+        response.body.forEach(function (task) {
+            client.assert(task.status === false);
+        });
+    });
+%}
+
+### Retrieve a single task
+GET {{ base_url }}/api/tasks/{{ task_id }}/
+Authorization: Bearer {{ access_token }}
+
+> {%
+    client.test("Task retrieved", function () {
+        client.assert(response.status === 200);
+        client.assert(response.body.id === client.global.get("task_id"));
+        client.assert(response.body.title === "Buy groceries");
+    });
+%}
+
+### Retrieve a nonexistent task (should fail)
+GET {{ base_url }}/api/tasks/99999/
+Authorization: Bearer {{ access_token }}
+
+> {%
+    client.test("Nonexistent task returns 404", function () {
+        client.assert(response.status === 404);
+    });
+%}
+
+### Update a task (full)
+PUT {{ base_url }}/api/tasks/{{ task_id }}/
+Content-Type: application/json
+Authorization: Bearer {{ access_token }}
+
+{
+  "title": "Buy groceries (updated)",
+  "description": "Milk, eggs, bread, butter",
+  "status": true
+}
+
+> {%
+    client.test("Task fully updated", function () {
+        client.assert(response.status === 200);
+        client.assert(response.body.title === "Buy groceries (updated)");
+        client.assert(response.body.description === "Milk, eggs, bread, butter");
+        client.assert(response.body.status === true);
+    });
+%}
+
+### Partially update a task (mark as pending)
+PATCH {{ base_url }}/api/tasks/{{ task_id }}/
+Content-Type: application/json
+Authorization: Bearer {{ access_token }}
+
+{
+  "status": false
+}
+
+> {%
+    client.test("Task partially updated", function () {
+        client.assert(response.status === 200);
+        client.assert(response.body.status === false);
+        client.assert(response.body.title === "Buy groceries (updated)");
+    });
+%}
+
+### Delete a task
+DELETE {{ base_url }}/api/tasks/{{ task_id }}/
+Authorization: Bearer {{ access_token }}
+
+> {%
+    client.test("Task deleted", function () {
+        client.assert(response.status === 204);
+    });
+%}
+
+### Verify deleted task is gone
+GET {{ base_url }}/api/tasks/{{ task_id }}/
+Authorization: Bearer {{ access_token }}
+
+> {%
+    client.test("Deleted task returns 404", function () {
+        client.assert(response.status === 404);
+    });
+%}

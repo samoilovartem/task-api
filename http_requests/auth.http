@@ -1,0 +1,99 @@
+### Register a new user
+POST {{ base_url }}/api/register/
+Content-Type: application/json
+
+{
+  "username": "{{ username }}",
+  "password": "{{ password }}"
+}
+
+> {%
+    client.test("User registered", function () {
+        client.assert(response.status === 201);
+        client.assert(response.body.hasOwnProperty("id"));
+        client.assert(response.body.hasOwnProperty("username"));
+        client.assert(!response.body.hasOwnProperty("password"));
+    });
+%}
+
+### Register with duplicate username (should fail)
+POST {{ base_url }}/api/register/
+Content-Type: application/json
+
+{
+  "username": "{{ username }}",
+  "password": "{{ password }}"
+}
+
+> {%
+    client.test("Duplicate username rejected", function () {
+        client.assert(response.status === 400);
+        client.assert(response.body.hasOwnProperty("username"));
+    });
+%}
+
+### Register with short password (should fail)
+POST {{ base_url }}/api/register/
+Content-Type: application/json
+
+{
+  "username": "shortpwduser",
+  "password": "short"
+}
+
+> {%
+    client.test("Short password rejected", function () {
+        client.assert(response.status === 400);
+        client.assert(response.body.hasOwnProperty("password"));
+    });
+%}
+
+### Obtain JWT token pair
+POST {{ base_url }}/api/token/
+Content-Type: application/json
+
+{
+  "username": "{{ username }}",
+  "password": "{{ password }}"
+}
+
+> {%
+    client.test("Token obtained", function () {
+        client.assert(response.status === 200);
+        client.assert(response.body.hasOwnProperty("access"));
+        client.assert(response.body.hasOwnProperty("refresh"));
+    });
+    client.global.set("access_token", response.body.access);
+    client.global.set("refresh_token", response.body.refresh);
+%}
+
+### Refresh JWT access token
+POST {{ base_url }}/api/token/refresh/
+Content-Type: application/json
+
+{
+  "refresh": "{{ access_token }}"
+}
+
+> {%
+    client.test("Token refreshed", function () {
+        client.assert(response.status === 200);
+        client.assert(response.body.hasOwnProperty("access"));
+    });
+    client.global.set("access_token", response.body.access);
+%}
+
+### Obtain token with wrong password (should fail)
+POST {{ base_url }}/api/token/
+Content-Type: application/json
+
+{
+  "username": "{{ username }}",
+  "password": "wrongpassword"
+}
+
+> {%
+    client.test("Invalid credentials rejected", function () {
+        client.assert(response.status === 401);
+    });
+%}
