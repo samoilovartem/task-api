@@ -62,6 +62,13 @@ API documentation is available at `http://localhost:8000/api/docs/`.
 | PATCH  | `/api/tasks/<id>/`    | Partially update a task                      |
 | DELETE | `/api/tasks/<id>/`    | Delete a task                                |
 
+## CI
+
+GitHub Actions runs on every push and PR to `main`:
+
+1. **Lint & Format** — `ruff check` and `ruff format --check`
+2. **Tests** — Django test suite against a PostgreSQL service container
+
 ## HTTP Requests (PyCharm)
 
 The `http_requests/` directory contains `.http` files for testing the API directly from PyCharm's HTTP Client.
