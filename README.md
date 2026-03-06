@@ -61,3 +61,12 @@ API documentation is available at `http://localhost:8000/api/docs/`.
 | PUT    | `/api/tasks/<id>/`    | Update a task                                |
 | PATCH  | `/api/tasks/<id>/`    | Partially update a task                      |
 | DELETE | `/api/tasks/<id>/`    | Delete a task                                |
+
+## HTTP Requests (PyCharm)
+
+The `http_requests/` directory contains `.http` files for testing the API directly from PyCharm's HTTP Client.
+
+- `auth.http` — Registration, JWT token obtain/refresh, error cases
+- `tasks.http` — Full task CRUD lifecycle with assertions
+
+To use them, select the **dev** environment in PyCharm's HTTP Client and run `auth.http` first to register a user and obtain a token, then run `tasks.http` for task operations.
