@@ -1,0 +1,41 @@
+[project]
+name = "task-api"
+version = "0.1.0"
+description = "REST API Task Tracker"
+requires-python = ">=3.13"
+dependencies = [
+    "django>=6.0.3",
+    "djangorestframework>=3.15",
+    "djangorestframework-simplejwt>=5.4",
+    "drf-spectacular>=0.28",
+    "django-filter>=25.1",
+    "psycopg[binary]>=3.2",
+    "gunicorn>=23.0",
+    "django-environ==0.13.0",
+]
+
+[tool.ruff]
+line-length = 120
+fix = true
+
+[tool.ruff.lint]
+select = [
+    "I",
+    "F",
+    "E",
+    "W",
+    "B",
+    "UP",
+    "N"
+]
+
+[tool.ruff.format]
+quote-style = "single"
+line-ending = "auto"
+
+[tool.ruff.lint.isort]
+length-sort-straight = true
+lines-between-types = 1
+#known-local-folder = [
+#    "app",
+#]
